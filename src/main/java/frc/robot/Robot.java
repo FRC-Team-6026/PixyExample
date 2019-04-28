@@ -10,6 +10,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import io.github.pseudoresonance.pixy2api.Pixy2;
+import io.github.pseudoresonance.pixy2api.Pixy2.LinkType;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -23,6 +25,7 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private final Pixy2 _pixy2 = Pixy2.createInstance(LinkType.SPI);
 
   /**
    * This function is run when the robot is first started up and should be
@@ -33,6 +36,7 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+    _pixy2.init(0);
   }
 
   /**
@@ -45,6 +49,20 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    var wait = false;
+    var signature = 0;
+    var blocksToReturn = 1;
+    var colorTracker = _pixy2.getCCC();
+    var blockCount = colorTracker.getBlocks(wait, signature, blocksToReturn);
+    if (blockCount > 0) //blocks were found for the specified signature
+    {
+      var block = colorTracker.getBlocks().get(0);
+      SmartDashboard.putNumber("Signature ID", block.getSignature());
+      SmartDashboard.putNumber("X", block.getX());
+      SmartDashboard.putNumber("Y", block.getY());
+      SmartDashboard.putNumber("Width", block.getWidth());
+      SmartDashboard.putNumber("Height", block.getHeight());
+    }
   }
 
   /**
